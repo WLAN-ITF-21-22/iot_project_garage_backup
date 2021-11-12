@@ -15,26 +15,23 @@ pubnub = PubNub(pnconfig)
 channel = 'projectGarage' 
 
 # Example messages
-def randomDate(start):
-    return start + datetime.timedelta(minutes=randrange(60))
+def randomDate(i):
+    occupied = random.randint(0,1) == 1
+    occupiedSince = "not occupied"
+    licensePlate = "not occupied"
+
+    if occupied:
+        occupiedSince = (datetime.datetime(2013, 9, 20,13,00) + datetime.timedelta(minutes=randrange(60)))\
+            .strftime("%d/%m/%Y %H:%M")
+        licensePlate = random.randint(999,10000)        
+    return [i, occupied, occupiedSince, licensePlate]
 
 
 startDate = datetime.datetime(2013, 9, 20,13,00)
 
 message = []
 for i in range(1, 5):
-    occupied = random.randint(0,1)
-    occupiedSince = "not occupied"
-    licensePlate = "not occupied"
-
-    if occupied == 1:
-        occupied = 'yes'
-        occupiedSince = randomDate(startDate).strftime("%d/%m/%Y %H:%M")
-        licensePlate = random.randint(999,10000)
-    else:
-        occupied = 'no'
-        
-    parkingSpot = [i, occupied, occupiedSince, licensePlate]
+    parkingSpot = randomDate(i)
     message.append(parkingSpot)
 print(message)
 
