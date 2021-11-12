@@ -9,7 +9,7 @@ import random
 from random import randrange
 import datetime
 
-# monnect to database
+# connect to database
 database = MySQLdb.connect(host="localhost", user="pi", passwd="raspberry",db="garageDummy")
 # database select
 cursor = database.cursor()
@@ -34,6 +34,7 @@ for _ in range(10):
     data = randomData()
     # print(data)
     # wegschrijven naar DB
-    cursor.execute("INSERT INTO parking(spot, occupied, occupiedSince, licensePlate) VALUES(%s, %s, %s, %s)", \
-         (data[0], data[1], data[2], data[3]))
+    cursor.execute("INSERT INTO parking(uploadTime, spot, occupied, occupiedSince, licensePlate) VALUES(%s, %s, %s, %s, %s)", \
+         (datetime.datetime.now(), data[0], data[1], data[2], data[3]))
     database.commit()
+    time.sleep(1)
