@@ -17,7 +17,7 @@ Database: Parking - utfmb4_unicode_ci
         last_name (varchar 255)
 """
 
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # library import
 import os, time
 from datetime import datetime
@@ -44,7 +44,7 @@ cursor = database.cursor()
 
 # functions
 
-# create table
+# create tables for database
 def create_tables():
     cursor.execute("DROP TABLE if exists Parking.inside")
     cursor.execute("DROP TABLE if exists Parking.log")
