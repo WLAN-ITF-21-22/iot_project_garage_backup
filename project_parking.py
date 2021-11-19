@@ -8,7 +8,6 @@ import digitalio
 import board
 import RPi.GPIO as GPIO
 from adafruit_bus_device.spi_device import SPIDevice
-import paho.mqtt.client as mqtt
 from datetime import datetime
 
 # database imports
@@ -57,7 +56,7 @@ db_name = "garageDummy"
 ### FUNCTIONS ###
 
 # Initialization: set up all LEDs that will be used from dictionary
-def initialize_LEDs(LED_dictionary, input):
+def initialize_pins(LED_dictionary, input):
     for key in LED_dictionary:
         if input:
             GPIO.setup(LED_dictionary[key], GPIO.IN)
@@ -112,7 +111,7 @@ def change_state(index, occupation_state):
     current_state[index] = occupation_state
     # send data to database
     data = format_data(index)
-    cursor.execute("INSERT INTO parking(uploadTime, spot, occupied, occupied_since, license_plate) VALUES(%s, %s, %s, %s, %s)", \
+    cursor.execute("INSERT INTO parking(upload_time, spot, occupied, occupied_since, licence_plate) VALUES(%s, %s, %s, %s, %s)", \
          (datetime.now(), data[0], data[1], data[2], data[3]))
     database.commit()
     # retreive data from database and send to webserver
@@ -154,11 +153,11 @@ def format_data(index):
     occupied = (current_state[index] == 'occupied')  # true/false
     if occupied:
         occupied_since = time_since_change[index].strftime("%d/%m/%Y %H:%M")
-        license_plate = "DUMMY PLATE"
+        licence_plate = "DUMMY PLATE"
     else:
         occupied_since = "not occupied"
-        license_plate = "not occupied"
-    return [spot, occupied, occupied_since, license_plate]
+        licence_plate = "not occupied"
+    return [spot, occupied, occupied_since, licence_plate]
 
 
 # Sending data: to pubnub
@@ -253,7 +252,7 @@ def traffic_ligth(red_orange_green):
     if red_orange_green == "red":
         return "geen plaatsen meer vrij"
     if red_orange_green == "orange":
-        return "even gedult alstublieft"
+        return "even geduld alstublieft"
     else:
         return "welkom, Bart"
 
@@ -277,8 +276,8 @@ cs0 = digitalio.DigitalInOut(board.CE0)  # chip select
 adc = SPIDevice(spi, cs0, baudrate= 1000000)
 
 # Initizalize leds
-initialize_LEDs(pin_dictionary_input, True)
-initialize_LEDs(pin_dictionary_output, False)
+initialize_pins(pin_dictionary_input, True)
+initialize_pins(pin_dictionary_output, False)
 
 # initialize barrier
 pwm = GPIO.PWM(pin_dictionary_output["barrier"], 50)
@@ -333,6 +332,6 @@ try:
 except KeyboardInterrupt:
     lcd.clear()  # empty the screen
     set_angle(75)  # barrier down again
-    initialize_LEDs(pin_dictionary_output, False) # set all LEDs to low
+    initialize_pins(pin_dictionary_output, False) # set all LEDs to low
     GPIO.cleanup()
     print("Program terminated succesfully")
