@@ -4,15 +4,15 @@ Database: Parking - utfmb4_unicode_ci
         spot (int 1 - 4)
         occupied (int 0 - 1)
         occupied_or_free_since (varchar 255)
-        license_plate (varchar 10)
+        license_plate (varchar 255)
     Table 2: log
         timestamp (datetime)
         spot (int 1 - 4)
         occupied (boolean 0 - 1)
         occupied_or_free_since (varchar 255)
-        license_plate (varchar 10)
+        license_plate (varchar 255)
     Table 3: allowed
-        license_plate (varchar 10)
+        license_plate (varchar 255)
         first_name (varchar 255)
         last_name (varchar 255)
         allowed_since (datetime)
@@ -66,7 +66,7 @@ def create_tables():
         license_plate varchar(255))")
     
     cursor.execute("CREATE TABLE allowed(\
-        license_plate varchar(10),\
+        license_plate varchar(255),\
         first_name varchar(255),\
         last_name varchar(255),\
         allowed_since datetime,\
