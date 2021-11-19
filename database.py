@@ -56,14 +56,14 @@ def create_tables():
         spot int(11),\
         occupied tinyint(1),\
         occupied_or_free_since varchar(255),\
-        license_plate varchar(10))")
+        license_plate varchar(255))")
     
     cursor.execute("CREATE TABLE log(\
         timestamp datetime,\
         spot int(11),\
         occupied tinyint(1),\
         occupied_or_free_since varchar(255),\
-        license_plate varchar(10))")
+        license_plate varchar(255))")
     
     cursor.execute("CREATE TABLE allowed(\
         license_plate varchar(10),\
