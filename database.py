@@ -15,8 +15,6 @@ Database: Parking - utfmb4_unicode_ci
         license_plate (varchar 255)
         first_name (varchar 255)
         last_name (varchar 255)
-        allowed_since (datetime)
-        allowed_until (datetime)
 """
 
 #!/usr/bin/env python
@@ -68,9 +66,7 @@ def create_tables():
     cursor.execute("CREATE TABLE allowed(\
         license_plate varchar(255),\
         first_name varchar(255),\
-        last_name varchar(255),\
-        allowed_since datetime,\
-        allowed_until datetime)")
+        last_name varchar(255))")
     
     database.commit()
 
@@ -85,6 +81,18 @@ def database_inside_initialize():
             (i, False, "unknown", "unknown"))
     database.commit()
 
+
+def database_allowed_initialize():
+    lander = ["LANDER", "Lander", "Wuyts"]
+    hanne = ["HANNE", "Hanne", "Verschueren"]
+    michiel = ["MICHIEL", "Michiel", "Müller"]
+    ilias = ["ILIAS", "Ilias", "Safiullin"]
+    database_write("allowed", lander)
+    database_write("allowed", hanne)
+    database_write("allowed", michiel)
+    database_write("allowed", ilias)
+
+
 # function for writing to all tables
 def database_write(table_name, information_list):
     if table_name == "inside":
@@ -97,20 +105,12 @@ def database_write(table_name, information_list):
             VALUES(%s, %s, %s, %s, %s)", \
             (information_list[0], information_list[1], information_list[2], information_list[3], information_list[4]))
     else:
-        cursor.execute("INSERT INTO allowed(license_plate, first_name, last_name, allowed_since, allowed_until) \
-            VALUES(%s, %s, %s, %s, %s)", \
-            (information_list[0], information_list[1], information_list[2], information_list[3], information_list[4]))
+        cursor.execute("INSERT INTO allowed(license_plate, first_name, last_name) \
+            VALUES(%s, %s, %s)", \
+            (information_list[0], information_list[1], information_list[2]))
     database.commit()
 
 
 create_tables()
 database_inside_initialize()
-
-# testing
-# database_write("inside", [1, False, datetime.now(), "1-A23-666"])
-# database_write("log", [datetime.now(), 1, False, datetime.now(), "1-A23-666"])
-# database_write("allowed", ["1-AEN-165", "Lander", "Wuyts", datetime.now(), datetime.now()])
-# database_write("inside", [1, False, datetime.now(), "1-A23-666"])
-
-
-
+database_allowed_initialize()
