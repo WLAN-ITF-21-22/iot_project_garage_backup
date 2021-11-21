@@ -101,9 +101,6 @@ pin_dictionary_input = {
 sleep_time = 2 # in seconds
 light_treshhold = 0.5  # how much light is required for the LEDs to switch color (between 0 and 1).
 
-# pins for LDRs, correspond to MCP3000 pins (0 - 7)
-LDR_pins = (0,1,2,3)
-
 # how long can a parking spot be dark before it is seen as occupied?
 time_before_occupied = 6  # in seconds
 
@@ -273,6 +270,7 @@ def LDR_execute():
         LDR_value = round(LDR_read_adc(LDR_pin) / 1023,2)
         LDR_check_state(LDR_value, LDR_pin)
         LDR_print_data(LDR_value, LDR_pin)
+    print()  # empty row to separate different entries
 
 
 # Writing data: adjust the state if a specific time has passed
@@ -299,8 +297,9 @@ def LDR_change_state(index, occupation_state):
     # change to...
     current_state[index] = occupation_state
     # send data to database
-    db_write("log", db_format(True, index, occupation_state))
-    db_write("inside", db_format(False, index, occupation_state))
+    data = db_format(index, occupation_state)
+    db_write("log", data)
+    db_write("inside", data[1:5])
     # retreive data from database and send to webserver
     message = db_read("inside")
     webserver_send_data(channel, message)
@@ -314,9 +313,16 @@ def LDR_print_data(LDR_value, index):
     last_change = time_since_change[index].strftime("%d/%m/%Y - %H:%M:%S")
 
     # print information
-    print("{}\tLight levels in parking spot {}: {}%".format(now, index, LDR_value_percentage))
-    print("This spot is {} since {}".format(current_state[index], last_change))
-    print("Light counter: {} - Dark counter: {}\n".format(light_counter_list[index], dark_counter_list[index]))
+    print("{}\tSpot {} - Light {}% - {} - lc/dc {}/{}".format(
+        now, 
+        index, 
+        LDR_value_percentage, 
+        current_state[index],
+        light_counter_list[index],
+        dark_counter_list[index]))
+    #print("{}\tLight levels in parking spot {}: {}%".format(now, index, LDR_value_percentage))
+    #print("This spot is {} since {}".format(current_state[index], last_change))
+    #print("Light counter: {} - Dark counter: {}\n".format(light_counter_list[index], dark_counter_list[index]))
     
     # (sending information is part of the chaneState() function)
 
@@ -365,16 +371,16 @@ def traffic_ligth(red_orange_green):
 
 
 # format data for sending to database
-def db_format(log, index, occupation_state):
-    information_list = []
-    if log:
-        information_list.append(datetime.now())
-    information_list.append(index)
+def db_format(index, occupation_state):
+    information_list = []  # [datetime, spot, occupied, occupied since, license plate]
+    information_list.append(datetime.now())
+    information_list.append(index + 1)
     information_list.append(occupation_state == "occupied")  # 0 if free, 1 if occupied
     information_list.append(time_since_change[index])
     if occupation_state == "free":
         information_list.append("Not occupied")
     else:
+        print(license_plates_inside_not_parked[0])
         information_list.append(license_plates_inside_not_parked[0])
         # remove said license plate: that car has parked
         license_plates_inside_not_parked.pop(0)
@@ -404,11 +410,14 @@ def db_read(table_name, criterium=False, criterium_row=None, select_row=None):
     # table_name = inside, log or allowed
     if criterium:
         # select specific item
-        cursor.execute("SELECT %s FROM %s WHERE %s = %s", (select_row, table_name, criterium_row, criterium))
+        cursor.execute("SELECT {} FROM {} WHERE {} = {}".format(select_row, table_name, criterium_row, criterium))
     else:
         # just select whole database
-        cursor.execute("SELECT * FROM %s", (table_name))  # may result in a very large database pull
-    return cursor
+        cursor.execute("SELECT * FROM {}".format(table_name))  # may result in a very large database pull
+    list = []
+    for row in cursor:
+        list.append(row)
+    return list
 
 
 # Write data: message to pubnub
@@ -453,9 +462,9 @@ GPIO.setmode(GPIO.BCM)
 cs0 = digitalio.DigitalInOut(board.CE0)  # chip select
 adc = SPIDevice(spi, cs0, baudrate= 1000000)
 
-# Initizalize leds
+# Initizalize leds 
 LED_initialize(pin_dictionary_input, True)
-LED_initialize(pin_dictionary_output, False)
+LED_initialize(pin_dictionary_output, False) 
 
 # initialize barrier
 pwm = GPIO.PWM(pin_dictionary_output["barrier"], 50)
@@ -491,7 +500,7 @@ light_counter_list = []  # how many times the LDR has registered light
 dark_counter_list = []  # how many times the LDR has registered darkness
 time_since_change = []  # mark time since last change
 current_state = []  # whether the position is currently occupied or not
-for l in LDR_pins:
+for _ in range(0,4):  # LDR pins go from 0 to 3 
     light_counter_list.append(0)
     dark_counter_list.append(0)
     time_since_change.append(datetime.now())
@@ -519,12 +528,12 @@ try:
         barrier_text = _thread.start_new_thread( barrier_check, (distance) )
         # thread 4: set the LCD display
         _thread.start_new_thread( LCD_write_display, ('lijn1','lijn2','lijn3',"barrier_text"))
-
+        
         # wait and clear
         time.sleep(sleep_time)
         lcd.clear()
 except KeyboardInterrupt:
-    lcd.clear()  # empty the screen
+    lcd.clear()   # empty the screen
     barrier_set_angle(75)  # barrier down again
     LED_initialize(pin_dictionary_output, False) # set all LEDs to low
     GPIO.cleanup()
