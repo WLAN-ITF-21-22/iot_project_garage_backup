@@ -239,7 +239,11 @@ def barrier_check(distance):
                 # save the license plate for later database assignment
                 license_plates_inside_not_parked.append(license_plate)
                 # return text to display on the screen
-                return "Welkom {}".format(license_plate.capitalize())  # NOTE: verander dit naar de naam van de eigenaar
+                # return text to display on the screen
+                name = db_read("allowed", license_plate, "license_plate", "first_name")[0] \
+                    + " " \
+                    + db_read("allowed", license_plate, "license_plate", "last_name") 
+                return "Welkom {}".format(name)  # NOTE: this needs to be tested properly might give errors
             else:
                 return "Not on the list: {}".format(license_plate.capitalize())
     else:
