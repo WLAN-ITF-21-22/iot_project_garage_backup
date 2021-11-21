@@ -151,7 +151,7 @@ def traffic_ligth_control():
     except ValueError:
         free_spot = -1
     # what to do with free spots
-    if not is_green:
+    if not is_green[0]:
         if free_spot != -1:
             # free spaces
             is_full[0] = False
