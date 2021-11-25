@@ -410,7 +410,7 @@ def db_read(table_name, criterium=False, criterium_row=None, select_row=None):
     # table_name = inside, log or allowed
     if criterium:
         # select specific item
-        cursor.execute("SELECT {} FROM {} WHERE {} = {}".format(select_row, table_name, criterium_row, criterium))
+        cursor.execute("SELECT {} FROM {} WHERE {} = '{}'".format(select_row, table_name, criterium_row, criterium))
     else:
         # just select whole database
         cursor.execute("SELECT * FROM {}".format(table_name))  # may result in a very large database pull
